@@ -2,6 +2,7 @@
   "name": "objeasy",
   "version": "1.0.0",
   "description": "A lightweight utility toolkit to control and manage plain JavaScript objects with precision.",
+  "type": "commonjs",
   "main": "index.js",
   "scripts": {
     "lint": "eslint .",
@@ -18,13 +19,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/KareemAboueid/obj-control.git"
+    "url": "https://github.com/kareemaboueid/objeasy"
   },
   "bugs": {
-    "url": "https://github.com/KareemAboueid/obj-control/issues"
+    "url": "https://github.com/kareemaboueid/objeasy/issues"
   },
-  "homepage": "https://github.com/KareemAboueid/obj-control#readme",
-  "type": "commonjs",
+  "homepage": "https://github.com/kareemaboueid/objeasy#readme",
   "devDependencies": {
     "@eslint/js": "^9.30.1",
     "eslint": "^9.30.1",
