@@ -72,3 +72,8 @@ module.exports = {
   pickit,
   modifyit
 };
+
+exports.default = {
+  pickit,
+  modifyit
+};

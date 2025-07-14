@@ -1,6 +1,6 @@
 {
   "name": "objeasy",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "A lightweight utility toolkit to control and manage plain JavaScript objects with precision.",
   "type": "commonjs",
   "main": "index.js",
