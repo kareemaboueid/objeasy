@@ -233,7 +233,7 @@ npm run benchmark
 
 ## Project Structure
 
-```
+```txt
 objeasy/
 ├── src/
 │   ├── pickit/
