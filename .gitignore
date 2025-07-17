@@ -11,3 +11,16 @@ yarn-error.log*
 .vscode/
 .idea/
 .DS_Store
+
+# TypeScript
+dist/
+*.tsbuildinfo
+
+# Development files
+prompt.txt
+test.js
+
+# Build artifacts
+coverage/
+*.lcov
+.nyc_output
