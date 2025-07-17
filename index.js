@@ -7,13 +7,22 @@
 
 const pickit = require('./src/pickit/pickit');
 const modifyit = require('./src/modifyit/modifyit');
+const mergeit = require('./src/mergeit/mergeit');
+const validateit = require('./src/validateit/validateit');
+const transformit = require('./src/transformit/transformit');
 
 module.exports = {
   pickit,
-  modifyit
+  modifyit,
+  mergeit,
+  validateit,
+  transformit
 };
 
 exports.default = {
   pickit,
-  modifyit
+  modifyit,
+  mergeit,
+  validateit,
+  transformit
 };
