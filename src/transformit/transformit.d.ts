@@ -23,6 +23,16 @@ export interface TransformitOptions {
    * @default false
    */
   deep?: boolean;
+  /**
+   * Array of keys to include in transformation (whitelist)
+   * Cannot be used together with excludeKeys
+   */
+  includeKeys?: string[];
+  /**
+   * Array of keys to exclude from transformation (blacklist)
+   * Cannot be used together with includeKeys
+   */
+  excludeKeys?: string[];
 }
 
 /**
