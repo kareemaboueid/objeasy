@@ -135,4 +135,108 @@ describe('pickit', () => {
       });
     });
   });
+
+  describe('deep picking functionality', () => {
+    const nestedObject = {
+      user: {
+        name: 'Alice',
+        profile: {
+          email: 'alice@example.com',
+          age: 28,
+          preferences: {
+            theme: 'dark',
+            language: 'en'
+          }
+        }
+      },
+      settings: {
+        notifications: true,
+        privacy: 'public'
+      },
+      id: 123
+    };
+
+    test('should pick nested paths with deep option', () => {
+      const result = pickit(nestedObject, ['user.name', 'user.profile.email'], { deep: true });
+      expect(result).toEqual({
+        user: {
+          name: 'Alice',
+          profile: {
+            email: 'alice@example.com'
+          }
+        }
+      });
+    });
+
+    test('should pick deeply nested paths', () => {
+      const result = pickit(nestedObject, ['user.profile.preferences.theme', 'settings.notifications'], { deep: true });
+      expect(result).toEqual({
+        user: {
+          profile: {
+            preferences: {
+              theme: 'dark'
+            }
+          }
+        },
+        settings: {
+          notifications: true
+        }
+      });
+    });
+
+    test('should mix regular and deep picking', () => {
+      const result = pickit(nestedObject, ['user.name', 'settings', 'id'], { deep: true });
+      expect(result).toEqual({
+        user: {
+          name: 'Alice'
+        },
+        settings: {
+          notifications: true,
+          privacy: 'public'
+        },
+        id: 123
+      });
+    });
+
+    test('should work without deep option for regular keys', () => {
+      const result = pickit(nestedObject, ['user', 'id']);
+      expect(result).toEqual({
+        user: {
+          name: 'Alice',
+          profile: {
+            email: 'alice@example.com',
+            age: 28,
+            preferences: {
+              theme: 'dark',
+              language: 'en'
+            }
+          }
+        },
+        id: 123
+      });
+    });
+
+    test('should throw error for non-existent nested path in strict mode', () => {
+      expect(() => {
+        pickit(nestedObject, ['user.profile.nonexistent'], { deep: true, strict: true });
+      }).toThrow('Nested path "user.profile.nonexistent" does not exist in the original object.');
+    });
+
+    test('should not throw error for non-existent nested path in non-strict mode', () => {
+      const result = pickit(nestedObject, ['user.profile.nonexistent'], { deep: true, strict: false });
+      expect(result).toEqual({});
+    });
+
+    test('should handle invalid nested paths gracefully', () => {
+      expect(() => {
+        pickit(nestedObject, ['user.name.first'], { deep: true, strict: true });
+      }).toThrow('Nested path "user.name.first" does not exist in the original object.');
+    });
+
+    test('should ignore dots in regular picking mode', () => {
+      const objWithDotKey = { 'user.name': 'test' };
+      const result = pickit(objWithDotKey, ['user.name'], { deep: false });
+      expect(result).toEqual({ 'user.name': 'test' });
+    });
+  });
 });

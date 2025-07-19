@@ -76,6 +76,123 @@ describe('mergeit', () => {
     });
   });
 
+  describe('array merge strategies', () => {
+    describe('concat strategy', () => {
+      test('should concatenate arrays with concat strategy', () => {
+        const obj1 = { items: [1, 2, 3], name: 'test' };
+        const obj2 = { items: [4, 5], other: 'value' };
+        const result = mergeit(obj1, obj2, { arrays: true, strategy: 'concat' });
+        expect(result).toEqual({ items: [1, 2, 3, 4, 5], name: 'test', other: 'value' });
+      });
+
+      test('should concatenate nested arrays with concat strategy', () => {
+        const obj1 = { data: { numbers: [1, 2], letters: ['a'] } };
+        const obj2 = { data: { numbers: [3, 4], symbols: ['!'] } };
+        const result = mergeit(obj1, obj2, { arrays: true, strategy: 'concat' });
+        expect(result).toEqual({
+          data: {
+            numbers: [1, 2, 3, 4],
+            letters: ['a'],
+            symbols: ['!']
+          }
+        });
+      });
+
+      test('should concatenate arrays with objects', () => {
+        const obj1 = { users: [{ id: 1, name: 'John' }] };
+        const obj2 = { users: [{ id: 2, name: 'Jane' }] };
+        const result = mergeit(obj1, obj2, { arrays: true, strategy: 'concat' });
+        expect(result).toEqual({
+          users: [
+            { id: 1, name: 'John' },
+            { id: 2, name: 'Jane' }
+          ]
+        });
+      });
+    });
+
+    describe('replace strategy', () => {
+      test('should replace arrays with replace strategy (default)', () => {
+        const obj1 = { items: [1, 2, 3], name: 'test' };
+        const obj2 = { items: [4, 5], other: 'value' };
+        const result = mergeit(obj1, obj2, { arrays: true, strategy: 'replace' });
+        expect(result).toEqual({ items: [4, 5], name: 'test', other: 'value' });
+      });
+
+      test('should replace arrays when arrays option is false regardless of strategy', () => {
+        const obj1 = { items: [1, 2, 3] };
+        const obj2 = { items: [4, 5] };
+        const result = mergeit(obj1, obj2, { arrays: false, strategy: 'concat' });
+        expect(result).toEqual({ items: [4, 5] });
+      });
+    });
+
+    describe('unique strategy', () => {
+      test('should merge arrays and remove duplicates with unique strategy', () => {
+        const obj1 = { items: [1, 2, 3, 2] };
+        const obj2 = { items: [3, 4, 5, 1] };
+        const result = mergeit(obj1, obj2, { arrays: true, strategy: 'unique' });
+        expect(result).toEqual({ items: [1, 2, 3, 4, 5] });
+      });
+
+      test('should handle unique strategy with string arrays', () => {
+        const obj1 = { tags: ['red', 'blue', 'green'] };
+        const obj2 = { tags: ['blue', 'yellow', 'red'] };
+        const result = mergeit(obj1, obj2, { arrays: true, strategy: 'unique' });
+        expect(result).toEqual({ tags: ['red', 'blue', 'green', 'yellow'] });
+      });
+
+      test('should handle unique strategy with object arrays', () => {
+        const obj1 = {
+          users: [
+            { id: 1, name: 'John' },
+            { id: 2, name: 'Jane' }
+          ]
+        };
+        const obj2 = {
+          users: [
+            { id: 1, name: 'John' },
+            { id: 3, name: 'Bob' }
+          ]
+        };
+        const result = mergeit(obj1, obj2, { arrays: true, strategy: 'unique' });
+        expect(result).toEqual({
+          users: [
+            { id: 1, name: 'John' },
+            { id: 2, name: 'Jane' },
+            { id: 3, name: 'Bob' }
+          ]
+        });
+      });
+
+      test('should handle unique strategy with mixed type arrays', () => {
+        const obj1 = { mixed: [1, 'hello', { key: 'value' }, true] };
+        const obj2 = { mixed: ['hello', 2, { key: 'value' }, false] };
+        const result = mergeit(obj1, obj2, { arrays: true, strategy: 'unique' });
+        expect(result).toEqual({
+          mixed: [1, 'hello', { key: 'value' }, true, 2, false]
+        });
+      });
+    });
+
+    describe('strategy validation', () => {
+      test('should throw error for invalid strategy', () => {
+        const obj1 = { items: [1, 2] };
+        const obj2 = { items: [3, 4] };
+        expect(() => {
+          mergeit(obj1, obj2, { strategy: 'invalid' });
+        }).toThrow('Strategy must be one of: concat, replace, unique');
+      });
+
+      test('should use replace as default strategy', () => {
+        const obj1 = { items: [1, 2, 3] };
+        const obj2 = { items: [4, 5] };
+        const result = mergeit(obj1, obj2, { arrays: true });
+        expect(result).toEqual({ items: [4, 5] });
+      });
+    });
+  });
+
   describe('multiple objects', () => {
     test('should merge multiple objects', () => {
       const obj1 = { a: 1 };
@@ -164,6 +281,91 @@ describe('mergeit', () => {
       expect(result.a).toBe(1);
       expect(result.b).toBe(2);
       expect(result.nested).toEqual({ x: 1, y: 2 });
+    });
+  });
+
+  describe('circular reference protection', () => {
+    test('should handle objects with circular references', () => {
+      const obj1 = { a: 1, b: 2 };
+      obj1.self = obj1; // Create circular reference
+
+      const obj2 = { c: 3, d: 4 };
+
+      // This should not cause a stack overflow
+      const result = mergeit(obj1, obj2);
+
+      expect(result.a).toBe(1);
+      expect(result.b).toBe(2);
+      expect(result.c).toBe(3);
+      expect(result.d).toBe(4);
+      expect(result.self).toBe(result); // Circular reference preserved
+    });
+
+    test('should handle nested circular references', () => {
+      const obj1 = {
+        user: { name: 'Alice', id: 1 },
+        data: { values: [1, 2, 3] }
+      };
+      obj1.user.parent = obj1; // Nested circular reference
+      obj1.data.owner = obj1.user; // Another reference
+
+      const obj2 = {
+        user: { age: 30 },
+        extra: 'value'
+      };
+
+      const result = mergeit(obj1, obj2);
+
+      expect(result.user.name).toBe('Alice');
+      expect(result.user.age).toBe(30);
+      expect(result.extra).toBe('value');
+      // Check that circular references are preserved in some form
+      expect(result.user.parent).toBeTruthy();
+      expect(result.data.owner).toBeTruthy();
+    });
+
+    test('should handle self-referencing object merge', () => {
+      const obj = { value: 1 };
+      obj.self = obj;
+
+      const other = { extra: 'data' };
+
+      // Merging object with circular reference should not cause stack overflow
+      const result = mergeit(obj, other);
+
+      expect(result.value).toBe(1);
+      expect(result.extra).toBe('data');
+      expect(result.self).toBeTruthy(); // Circular reference should exist in some form
+    });
+
+    test('should handle circular references in arrays', () => {
+      const obj1 = { items: [] };
+      obj1.items.push(obj1); // Array with circular reference
+
+      const obj2 = { name: 'test' };
+
+      const result = mergeit(obj1, obj2);
+
+      expect(result.name).toBe('test');
+      expect(result.items[0]).toBe(result);
+    });
+
+    test('should handle multiple circular references', () => {
+      const objA = { name: 'A' };
+      const objB = { name: 'B' };
+      objA.ref = objB;
+      objB.ref = objA; // Mutual circular reference
+
+      const container = { a: objA, b: objB };
+      const other = { c: 'value' };
+
+      const result = mergeit(container, other);
+
+      expect(result.a.name).toBe('A');
+      expect(result.b.name).toBe('B');
+      expect(result.a.ref).toBe(result.b);
+      expect(result.b.ref).toBe(result.a);
+      expect(result.c).toBe('value');
     });
   });
 });

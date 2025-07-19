@@ -270,4 +270,249 @@ describe('transformit', () => {
       });
     });
   });
+
+  describe('includeKeys and excludeKeys options', () => {
+    const testObject = {
+      name: 'Kareem',
+      age: 30,
+      email: 'me@example.com',
+      isAdmin: false,
+      role: 'developer'
+    };
+
+    describe('includeKeys', () => {
+      test('should transform only specified keys', () => {
+        const mappers = {
+          name: value => value.toUpperCase(),
+          email: value => value.replace('@', ' at '),
+          age: value => value * 2
+        };
+
+        const result = transformit(testObject, mappers, {
+          includeKeys: ['name', 'email']
+        });
+
+        expect(result).toEqual({
+          name: 'KAREEM',
+          age: 30, // unchanged
+          email: 'me at example.com',
+          isAdmin: false, // unchanged
+          role: 'developer' // unchanged
+        });
+      });
+
+      test('should work with wildcard mapper and includeKeys', () => {
+        const result = transformit(
+          testObject,
+          {
+            '*': value => String(value).toUpperCase()
+          },
+          {
+            includeKeys: ['name', 'role']
+          }
+        );
+
+        expect(result).toEqual({
+          name: 'KAREEM',
+          age: 30, // unchanged
+          email: 'me@example.com', // unchanged
+          isAdmin: false, // unchanged
+          role: 'DEVELOPER'
+        });
+      });
+
+      test('should work with function mapper and includeKeys', () => {
+        const result = transformit(testObject, value => String(value).toUpperCase(), {
+          includeKeys: ['name', 'email']
+        });
+
+        expect(result).toEqual({
+          name: 'KAREEM',
+          age: 30, // unchanged
+          email: 'ME@EXAMPLE.COM',
+          isAdmin: false, // unchanged
+          role: 'developer' // unchanged
+        });
+      });
+    });
+
+    describe('excludeKeys', () => {
+      test('should exclude specified keys from transformation', () => {
+        const result = transformit(
+          testObject,
+          {
+            '*': value => String(value).toUpperCase()
+          },
+          {
+            excludeKeys: ['isAdmin', 'age']
+          }
+        );
+
+        expect(result).toEqual({
+          name: 'KAREEM',
+          age: 30, // unchanged
+          email: 'ME@EXAMPLE.COM',
+          isAdmin: false, // unchanged
+          role: 'DEVELOPER'
+        });
+      });
+
+      test('should work with specific mappers and excludeKeys', () => {
+        const mappers = {
+          name: value => value.toUpperCase(),
+          email: value => value.replace('@', ' at '),
+          age: value => value * 2,
+          isAdmin: value => !value
+        };
+
+        const result = transformit(testObject, mappers, {
+          excludeKeys: ['isAdmin', 'role']
+        });
+
+        expect(result).toEqual({
+          name: 'KAREEM',
+          age: 60,
+          email: 'me at example.com',
+          isAdmin: false, // unchanged
+          role: 'developer' // unchanged
+        });
+      });
+    });
+
+    describe('validation', () => {
+      test('should throw error when both includeKeys and excludeKeys are specified', () => {
+        expect(() => {
+          transformit(
+            testObject,
+            { '*': value => value },
+            {
+              includeKeys: ['name'],
+              excludeKeys: ['age']
+            }
+          );
+        }).toThrow('Cannot specify both includeKeys and excludeKeys options.');
+      });
+
+      test('should throw error when includeKeys is not an array', () => {
+        expect(() => {
+          transformit(
+            testObject,
+            { '*': value => value },
+            {
+              includeKeys: 'name'
+            }
+          );
+        }).toThrow('includeKeys must be an array of strings.');
+      });
+
+      test('should throw error when excludeKeys is not an array', () => {
+        expect(() => {
+          transformit(
+            testObject,
+            { '*': value => value },
+            {
+              excludeKeys: 'name'
+            }
+          );
+        }).toThrow('excludeKeys must be an array of strings.');
+      });
+    });
+
+    describe('edge cases', () => {
+      test('should handle empty includeKeys array', () => {
+        const result = transformit(
+          testObject,
+          {
+            '*': value => String(value).toUpperCase()
+          },
+          {
+            includeKeys: []
+          }
+        );
+
+        // No keys should be transformed
+        expect(result).toEqual(testObject);
+      });
+
+      test('should handle empty excludeKeys array', () => {
+        const result = transformit(
+          testObject,
+          {
+            '*': value => String(value).toUpperCase()
+          },
+          {
+            excludeKeys: []
+          }
+        );
+
+        // All keys should be transformed
+        expect(result).toEqual({
+          name: 'KAREEM',
+          age: '30',
+          email: 'ME@EXAMPLE.COM',
+          isAdmin: 'FALSE',
+          role: 'DEVELOPER'
+        });
+      });
+
+      test('should handle includeKeys with non-existent keys', () => {
+        const result = transformit(
+          testObject,
+          {
+            '*': value => String(value).toUpperCase()
+          },
+          {
+            includeKeys: ['name', 'nonExistent']
+          }
+        );
+
+        expect(result).toEqual({
+          name: 'KAREEM',
+          age: 30, // unchanged
+          email: 'me@example.com', // unchanged
+          isAdmin: false, // unchanged
+          role: 'developer' // unchanged
+        });
+      });
+    });
+
+    describe('deep transformation with filtering', () => {
+      test('should apply filtering to nested objects with deep option', () => {
+        const nestedObj = {
+          user: {
+            name: 'John',
+            age: 25,
+            email: 'john@test.com'
+          },
+          meta: {
+            created: '2024-01-01',
+            updated: '2024-01-02'
+          }
+        };
+
+        const result = transformit(
+          nestedObj,
+          {
+            '*': value => (typeof value === 'string' ? value.toUpperCase() : value)
+          },
+          {
+            deep: true,
+            excludeKeys: ['age', 'updated']
+          }
+        );
+
+        expect(result).toEqual({
+          user: {
+            name: 'John', // transformed because it's a string but 'age' is excluded
+            age: 25, // unchanged due to excludeKeys
+            email: 'john@test.com' // transformed because it's a string
+          },
+          meta: {
+            created: '2024-01-01', // transformed because it's a string
+            updated: '2024-01-02' // unchanged due to excludeKeys
+          }
+        });
+      });
+    });
+  });
 });
