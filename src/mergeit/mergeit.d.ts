@@ -9,10 +9,18 @@ export interface MergeitOptions {
   deep?: boolean;
   /**
    * Whether to merge arrays or replace them
-   * When true, arrays are concatenated; when false, source arrays replace target arrays
+   * When true, arrays are merged according to the strategy; when false, source arrays replace target arrays
    * @default false
    */
   arrays?: boolean;
+  /**
+   * Array merge strategy when arrays option is true
+   * - 'concat': Concatenate arrays together
+   * - 'replace': Replace target array with source array (default behavior)
+   * - 'unique': Concatenate arrays and remove duplicates
+   * @default 'replace'
+   */
+  strategy?: 'concat' | 'replace' | 'unique';
 }
 
 /**
