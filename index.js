@@ -9,7 +9,6 @@
  * - omitit: Remove specific keys from objects (inverse of pickit)
  * - flattenit: Flatten nested objects to single-level with dot notation
  *
- * @version 2.0.0
  * @author Kareem Aboueid
  * @license MIT
  * @homepage https://github.com/kareemaboueid/objeasy
