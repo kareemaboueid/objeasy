@@ -11,6 +11,6 @@
     "allowJs": true,
     "noEmit": true
   },
-  "include": ["src/**/*", "examples/**/*", "index.js", "*.d.ts"],
+  "include": ["src/**/*", "index.js", "*.d.ts"],
   "exclude": ["node_modules"]
 }
