@@ -1,6 +1,6 @@
 {
   "name": "objeasy",
-  "version": "2.0.0",
+  "version": "2.3.0",
   "description": "A lightweight utility toolkit to control and manage plain JavaScript objects with precision.",
   "type": "commonjs",
   "main": "index.js",
@@ -10,6 +10,7 @@
     "index.d.ts",
     "src/",
     "README.md",
+    "CHANGELOG.md",
     "LICENSE"
   ],
   "scripts": {
@@ -17,21 +18,34 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "lint": "eslint .",
-    "format": "prettier --write .",
+    "lint:fix": "eslint . --fix",
+    "format:check": "prettier --check .",
+    "format:fix": "prettier --write .",
     "type-check": "tsc --noEmit",
-    "benchmark": "node benchmarks/performance.js",
-    "example": "node examples/basic.js",
+    "benchmark": "node benchmarks/all.benchmark.js",
     "prepare": "husky"
   },
   "keywords": [
     "object",
-    "manipulation",
-    "utility",
+    "utilities",
+    "object-utils",
     "javascript",
     "typescript",
-    "library"
+    "merge",
+    "transform",
+    "pick",
+    "modify",
+    "omit",
+    "flatten",
+    "deep-clone",
+    "object-manipulation",
+    "functional",
+    "immutable",
+    "utility-functions",
+    "js-utils",
+    "object-tools"
   ],
-  "author": "Kareem Aboueid",
+  "author": "Kareem Aboueid <kareem_aboueid@outlook.com>",
   "license": "MIT",
   "repository": {
     "type": "git",
