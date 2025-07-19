@@ -7,6 +7,11 @@ export interface PickitOptions {
    * @default true
    */
   strict?: boolean;
+  /**
+   * Whether to support nested path picking (e.g., 'user.name')
+   * @default false
+   */
+  deep?: boolean;
 }
 
 /**
